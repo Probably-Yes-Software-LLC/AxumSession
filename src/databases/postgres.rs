@@ -1,27 +1,31 @@
 use crate::{DatabasePool, Session, SessionError, SessionStore};
 use async_trait::async_trait;
 use chrono::Utc;
-use sqlx::{pool::Pool, PgPool, Postgres};
+use sqlx::{pool::Pool, Database, Executor, PgPool, Postgres};
 
 ///Postgres's Session Helper type for the DatabasePool.
-pub type SessionPgSession = Session<SessionPgPool>;
+// pub type SessionPgSession = Session<SessionPgPool>;
 ///Postgres's Session Store Helper type for the DatabasePool.
-pub type SessionPgSessionStore = SessionStore<SessionPgPool>;
+// pub type SessionPgSessionStore = SessionStore<SessionPgPool>;
 
 ///Postgres's Pool type for the DatabasePool
 #[derive(Debug, Clone)]
-pub struct SessionPgPool {
-    pool: Pool<Postgres>,
+pub struct SessionPgPool<Pool> {
+    pool: Pool,
 }
 
-impl From<Pool<Postgres>> for SessionPgPool {
+impl From<PgPool> for SessionPgPool<PgPool> {
     fn from(conn: PgPool) -> Self {
         SessionPgPool { pool: conn }
     }
 }
 
 #[async_trait]
-impl DatabasePool for SessionPgPool {
+impl<'a, Pool> DatabasePool for SessionPgPool<Pool>
+where
+    Pool: Send + Sync,
+    for<'b> &'b Pool: Executor<'a, Database = Postgres>,
+{
     async fn initiate(&self, table_name: &str) -> Result<(), SessionError> {
         sqlx::query(
             &r#"
