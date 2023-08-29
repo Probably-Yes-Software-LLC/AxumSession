@@ -1,6 +1,7 @@
 use chrono::Duration;
 pub use cookie::{Key, SameSite};
 use std::borrow::Cow;
+use std::time::Duration as StdDuration;
 
 /// Mode at which the Session will function As.
 ///
@@ -162,6 +163,8 @@ impl std::fmt::Debug for SessionConfig {
 }
 
 impl SessionConfig {
+    const CONVERT_ERROR: &str = "Cannot convert to chrono::Duration";
+
     /// Creates [`Default`] configuration of [`SessionConfig`].
     /// This is equivalent to the [`SessionConfig::default()`].
     #[inline]
@@ -305,8 +308,8 @@ impl SessionConfig {
     /// ```
     ///
     #[must_use]
-    pub fn with_lifetime(mut self, time: Duration) -> Self {
-        self.lifespan = time;
+    pub fn with_lifetime(mut self, time: StdDuration) -> Self {
+        self.lifespan = Duration::from_std(time).expect(Self::CONVERT_ERROR);
         self
     }
 
@@ -325,8 +328,8 @@ impl SessionConfig {
     /// ```
     ///
     #[must_use]
-    pub fn with_max_age(mut self, time: Option<Duration>) -> Self {
-        self.cookie_max_age = time;
+    pub fn with_max_age(mut self, time: Option<StdDuration>) -> Self {
+        self.cookie_max_age = time.map(|t| Duration::from_std(t).expect(Self::CONVERT_ERROR));
         self
     }
 
@@ -341,8 +344,8 @@ impl SessionConfig {
     /// ```
     ///
     #[must_use]
-    pub fn with_max_lifetime(mut self, time: Duration) -> Self {
-        self.max_lifespan = time;
+    pub fn with_max_lifetime(mut self, time: StdDuration) -> Self {
+        self.max_lifespan = Duration::from_std(time).expect(Self::CONVERT_ERROR);
         self
     }
 
@@ -359,8 +362,8 @@ impl SessionConfig {
     /// ```
     ///
     #[must_use]
-    pub fn with_memory_lifetime(mut self, time: Duration) -> Self {
-        self.memory_lifespan = time;
+    pub fn with_memory_lifetime(mut self, time: StdDuration) -> Self {
+        self.memory_lifespan = Duration::from_std(time).expect(Self::CONVERT_ERROR);
         self
     }
 
@@ -377,8 +380,8 @@ impl SessionConfig {
     /// ```
     ///
     #[must_use]
-    pub fn with_expiration_update(mut self, duration: Duration) -> Self {
-        self.expiration_update = duration;
+    pub fn with_expiration_update(mut self, duration: StdDuration) -> Self {
+        self.expiration_update = Duration::from_std(duration).expect(Self::CONVERT_ERROR);
         self
     }
 

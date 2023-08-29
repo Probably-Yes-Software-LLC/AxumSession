@@ -93,12 +93,12 @@ where
 
             // Check if the session id exists if not lets check if it exists in the database or generate a new session.
             // If manual mode is enabled then do not check for a Session unless the UUID is not new.
-
-            let check_database: bool = if is_new && !store.config.session_mode.is_manual() {
+            let is_manual = store.config.session_mode.is_manual();
+            let check_database = if is_new && !is_manual {
                 let sess = SessionData::new(session.id.0, storable, &store.config);
                 store.inner.insert(session.id.inner(), sess);
                 false
-            } else if !is_new || !store.config.session_mode.is_manual() {
+            } else if !is_new || !is_manual {
                 !store.service_session_data(&session)
             } else {
                 false
